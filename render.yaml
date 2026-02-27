@@ -1,0 +1,55 @@
+# Render Blueprint for Intelligent Test Plan Generator
+# Deploy this app to Render with one click using this configuration
+
+services:
+  - type: web
+    name: intelligent-test-plan-generator
+    runtime: node
+    region: oregon  # Change to your preferred region: ohio, virginia, frankfurt, singapore, etc.
+    plan: free      # Change to 'starter' or higher for production
+    
+    # Build configuration
+    buildCommand: |
+      npm install && \
+      cd backend && npm install && \
+      cd ../frontend && npm install && npm run build
+    
+    # Start command
+    startCommand: cd backend && npm start
+    
+    # Health check path
+    healthCheckPath: /api/health
+    
+    # Environment variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000  # Render sets this automatically, but we define it explicitly
+      - key: ENCRYPTION_KEY
+        generateValue: true  # Auto-generate a random encryption key
+      # Optional: Pre-configure JIRA settings (remove if not needed)
+      # - key: JIRA_BASE_URL
+      #   value: https://your-domain.atlassian.net
+      # Optional: Pre-configure LLM settings (remove if not needed)
+      # - key: DEFAULT_LLM_PROVIDER
+      #   value: groq
+    
+    # Persistent disk for SQLite database
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1
+    
+    # Auto-deploy on git push to main branch
+    autoDeploy: true
+
+# Optional: Define a preview environment for pull requests
+# previews:
+#   generation: automatic
+
+# Optional: Define a database if you want to migrate from SQLite to PostgreSQL
+# databases:
+#   - name: testplan-db
+#     plan: free
+#     region: oregon

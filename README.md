@@ -202,11 +202,29 @@ A full-stack web application that automates test plan creation by integrating JI
 
 This app is configured for easy deployment to [Render](https://render.com) with full backend + frontend + SQLite support.
 
-#### One-Click Deploy
+#### Option 1: Deploy via Blueprint (render.yaml) - Recommended
+
+This method uses Infrastructure as Code for consistent deployments:
+
+1. **Push `render.yaml` to your GitHub repo** (already included)
+
+2. **Go to Render Dashboard**
+   - Click **New +** → **Blueprint**
+   - Connect your GitHub repository
+   - Render will automatically read the `render.yaml` configuration
+
+3. **Deploy!** 🎉
+   - Render will create the web service with:
+     - Proper build/start commands
+     - Persistent disk for SQLite
+     - Auto-generated encryption key
+     - Health checks configured
+
+#### Option 2: One-Click Deploy
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bhaumikgohel/Intelligent-Test-Plan-Generator-Using-JIRA)
 
-#### Manual Deploy
+#### Option 3: Manual Deploy
 
 1. **Fork/Connect GitHub Repo**
    - Go to [Render Dashboard](https://dashboard.render.com)
