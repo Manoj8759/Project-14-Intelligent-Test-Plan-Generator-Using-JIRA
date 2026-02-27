@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Slider } from '@/components/ui/slider';
 import { settingsApi, templatesApi } from '@/services/api';
 
@@ -82,7 +82,7 @@ export default function SettingsPage() {
   const testJiraConnection = async () => {
     setJiraStatus('loading');
     try {
-      const res = await settingsApi.testJiraConnection(jiraConfig);
+      const res = await settingsApi.testJiraConnection(jiraConfig) as { success: boolean; message: string };
       if (res.success) {
         setJiraStatus('success');
         setJiraMessage(res.message);
@@ -113,7 +113,7 @@ export default function SettingsPage() {
         ? { provider: 'groq', groq: llmConfig.groq }
         : { provider: 'ollama', ollama: llmConfig.ollama };
       
-      const res = await settingsApi.testLlmConnection(config);
+      const res = await settingsApi.testLlmConnection(config) as { success: boolean; message: string };
       if (res.success) {
         setLlmStatus('success');
         setLlmMessage(res.message);
