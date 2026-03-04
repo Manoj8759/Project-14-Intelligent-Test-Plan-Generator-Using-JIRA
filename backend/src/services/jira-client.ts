@@ -35,10 +35,10 @@ export class JiraClient {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as { displayName?: string; emailAddress?: string };
         return {
           success: true,
-          message: `Connected as ${data.displayName} (${data.emailAddress})`
+          message: `Connected as ${data.displayName || 'Unknown'} (${data.emailAddress || 'N/A'})`
         };
       } else {
         const error = await response.text();

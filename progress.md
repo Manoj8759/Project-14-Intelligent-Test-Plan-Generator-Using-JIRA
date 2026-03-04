@@ -252,4 +252,36 @@
 
 ---
 
-*Last Updated: 2026-02-14*
+### 2026-03-04 - Feature: DOCX and PDF Download
+
+#### Actions Taken
+- [x] Added backend dependencies: `docx`, `marked`, `html-to-docx`, `puppeteer`
+- [x] Created `backend/src/routes/download.ts` with endpoints:
+  - `POST /api/download/docx` - Generate Word document from markdown
+  - `POST /api/download/pdf` - Generate PDF from markdown
+- [x] Registered download routes in `backend/src/index.ts`
+- [x] Created `backend/src/types/html-to-docx.d.ts` for TypeScript declarations
+- [x] Added `downloadApi` to frontend API service (`frontend/src/services/api.ts`)
+- [x] Created `DropdownMenu` UI component (`frontend/src/components/ui/dropdown-menu.tsx`)
+- [x] Updated Dashboard with download dropdown:
+  - Word Document (.docx) - Blue icon
+  - PDF Document (.pdf) - Red icon  
+  - Markdown (.md) - Gray icon
+- [x] Fixed TypeScript errors in existing code
+
+#### Files Modified
+- `backend/package.json` - Added new dependencies
+- `backend/src/index.ts` - Added download routes
+- `backend/src/routes/download.ts` - New file
+- `backend/src/types/html-to-docx.d.ts` - New file
+- `backend/src/services/jira-client.ts` - Fixed type issue
+- `frontend/src/services/api.ts` - Added downloadApi
+- `frontend/src/components/ui/dropdown-menu.tsx` - New file
+- `frontend/src/pages/Dashboard.tsx` - Updated download UI
+
+#### Status
+- **Feature:** ✅ COMPLETE - Test plans can now be downloaded in DOCX, PDF, and Markdown formats
+
+---
+
+*Last Updated: 2026-03-04*

@@ -18,6 +18,7 @@ import settingsRoutes from './routes/settings';
 import jiraRoutes from './routes/jira';
 import templatesRoutes from './routes/templates';
 import testplanRoutes from './routes/testplan';
+import downloadRoutes from './routes/download';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -57,6 +58,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/jira', jiraRoutes);
 app.use('/api/templates', templatesRoutes);
 app.use('/api/testplan', testplanRoutes);
+app.use('/api/download', downloadRoutes);
 
 // API Root - List all available endpoints
 app.get('/api', (req, res) => {
@@ -79,7 +81,9 @@ app.get('/api', (req, res) => {
       'POST /api/templates/upload': 'Upload PDF template',
       'DELETE /api/templates/:id': 'Delete template',
       'POST /api/testplan/generate': 'Generate test plan',
-      'GET  /api/testplan/history': 'Get generation history'
+      'GET  /api/testplan/history': 'Get generation history',
+      'POST /api/download/docx': 'Download as DOCX',
+      'POST /api/download/pdf': 'Download as PDF'
     }
   });
 });

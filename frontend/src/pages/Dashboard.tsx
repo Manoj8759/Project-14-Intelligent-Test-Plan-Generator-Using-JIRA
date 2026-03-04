@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, Wand2, Copy, Download, FileText, Clock } from 'lucide-react';
+import { Search, Loader2, Wand2, Copy, Download, FileText, Clock, FileDown, FileType, FileIcon, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { jiraApi, templatesApi, testplanApi } from '@/services/api';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { jiraApi, templatesApi, testplanApi, downloadApi } from '@/services/api';
 import ReactMarkdown from 'react-markdown';
 
 interface Ticket {
@@ -132,7 +139,7 @@ export default function Dashboard() {
     navigator.clipboard.writeText(generatedPlan);
   };
 
-  const handleDownload = () => {
+  const handleDownloadMarkdown = () => {
     const blob = new Blob([generatedPlan], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -140,6 +147,24 @@ export default function Dashboard() {
     a.download = `test-plan-${ticket?.key || 'generated'}.md`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadDocx = async () => {
+    try {
+      const filename = `test-plan-${ticket?.key || 'generated'}`;
+      await downloadApi.downloadDocx(generatedPlan, filename);
+    } catch (error: any) {
+      setError(error.message || 'Failed to download DOCX');
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const filename = `test-plan-${ticket?.key || 'generated'}`;
+      await downloadApi.downloadPdf(generatedPlan, filename);
+    } catch (error: any) {
+      setError(error.message || 'Failed to download PDF');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -335,10 +360,39 @@ export default function Dashboard() {
                     <Copy className="h-4 w-4 mr-1" />
                     Copy
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDownload}>
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-1" />
+                        Download
+                        <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={handleDownloadDocx} className="cursor-pointer">
+                        <FileType className="h-4 w-4 mr-2 text-blue-600" />
+                        <div className="flex flex-col">
+                          <span>Word Document</span>
+                          <span className="text-xs text-muted-foreground">.docx format</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDownloadPdf} className="cursor-pointer">
+                        <FileDown className="h-4 w-4 mr-2 text-red-600" />
+                        <div className="flex flex-col">
+                          <span>PDF Document</span>
+                          <span className="text-xs text-muted-foreground">.pdf format</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleDownloadMarkdown} className="cursor-pointer">
+                        <FileIcon className="h-4 w-4 mr-2 text-gray-600" />
+                        <div className="flex flex-col">
+                          <span>Markdown</span>
+                          <span className="text-xs text-muted-foreground">.md format</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
             </CardHeader>
