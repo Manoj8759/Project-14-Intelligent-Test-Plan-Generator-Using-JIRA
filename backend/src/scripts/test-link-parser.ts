@@ -4,7 +4,7 @@ async function testLinkParser() {
   console.log('🔍 Testing Link Parser...');
   
   const textWithLinks = `
-    Please refer to our PRD here: https://raw.githubusercontent.com/bhaumikgohel/Intelligent-Test-Plan-Generator-Using-JIRA/main/README.md
+    Please refer to our PRD here: https://raw.githubusercontent.com/Manoj8759/Project-14-Intelligent-Test-Plan-Generator-Using-JIRA/main/README.md
     And the PDF spec: https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf
   `;
 

@@ -222,14 +222,14 @@ This method uses Infrastructure as Code for consistent deployments:
 
 #### Option 2: One-Click Deploy
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bhaumikgohel/Intelligent-Test-Plan-Generator-Using-JIRA)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Manoj8759/Project-14-Intelligent-Test-Plan-Generator-Using-JIRA)
 
 #### Option 3: Manual Deploy
 
 1. **Fork/Connect GitHub Repo**
    - Go to [Render Dashboard](https://dashboard.render.com)
    - Click **New +** → **Web Service**
-   - Connect your GitHub repo: `bhaumikgohel/Intelligent-Test-Plan-Generator-Using-JIRA`
+   - Connect your GitHub repo: `Manoj8759/Project-14-Intelligent-Test-Plan-Generator-Using-JIRA`
 
 2. **Configure Service**
    | Setting | Value |
