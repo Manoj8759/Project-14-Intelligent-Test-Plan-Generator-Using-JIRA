@@ -38,11 +38,27 @@ let pgPool: any = null;
 
 const getPostgresPool = async () => {
   if (!pgPool && DB_TYPE === 'postgres') {
+    // Check if we're on Vercel to use @vercel/postgres
+    const isVercel = process.env.VERCEL === '1' || !!process.env.POSTGRES_URL;
+    
+    if (isVercel) {
+      try {
+        const { createPool } = await import('@vercel/postgres');
+        pgPool = createPool({
+          connectionString: DATABASE_URL || process.env.POSTGRES_URL
+        });
+        console.log('Connected to Vercel Postgres');
+        return pgPool;
+      } catch (e) {
+        console.warn('Vercel Postgres SDK failed, falling back to pg:', e);
+      }
+    }
+
     const { Pool } = await import('pg');
     pgPool = new Pool({
       connectionString: DATABASE_URL,
       ssl: {
-        rejectUnauthorized: false // Required for Render PostgreSQL
+        rejectUnauthorized: false // Required for Render/Cloud PostgreSQL
       }
     });
     console.log('Connected to PostgreSQL database');

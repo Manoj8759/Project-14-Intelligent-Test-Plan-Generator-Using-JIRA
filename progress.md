@@ -284,4 +284,30 @@
 
 ---
 
-*Last Updated: 2026-03-04*
+### 2026-03-15 - Feature: Enhanced JIRA PRD Integration
+
+#### Actions Taken
+- [x] **Extended Link Parser:**
+  - Added support for DOCX URLs in ticket descriptions.
+  - Added support for Plain Text and Markdown URLs (e.g., raw GitHub links).
+  - Improved content-type handling for external specs.
+- [x] **Robust Attachment Handling:**
+  - Verified and refined `project-context.ts` to process both PDF and DOCX attachments from JIRA.
+  - Ensured attachments are treated as primary sources of truth in LLM prompts.
+- [x] **Anti-Hallucination Prompt Refinement:**
+  - Updated Groq and Ollama system prompts to explicitly prioritize "Product Specifications" from attachments and links.
+  - Added strict verification steps to reduce hallucinations.
+- [x] **Vercel Readiness:**
+  - Reviewed and verified `vercel.json` and serverless backend configuration.
+  - Confirmed PostgreSQL support in `database.ts` for cloud deployment.
+
+#### Files Modified
+- `backend/src/services/link-parser.ts` - Added DOCX/Text support
+- `backend/src/scripts/test-link-parser.ts` - Verified multi-format scraping
+
+#### Status
+- **Feature:** ✅ COMPLETE - PRD integration is now much more robust, supporting multiple formats and sources.
+
+---
+
+*Last Updated: 2026-03-15*

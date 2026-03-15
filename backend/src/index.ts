@@ -23,6 +23,22 @@ import downloadRoutes from './routes/download';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Database initialized flag
+let isDbInitialized = false;
+
+// Middleware to ensure DB is initialized in serverless context
+app.use(async (req, res, next) => {
+  if (!isDbInitialized) {
+    try {
+      await initDatabase();
+      isDbInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize database in middleware:', error);
+    }
+  }
+  next();
+});
+
 // Middleware
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -125,4 +141,10 @@ const startServer = async () => {
   }
 };
 
-startServer();
+// For Vercel Serverless
+export default app;
+
+// Start server locally
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  startServer();
+}

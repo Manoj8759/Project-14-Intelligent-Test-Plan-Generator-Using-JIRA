@@ -8,6 +8,13 @@ export interface JiraTicket {
   assignee?: string;
   labels: string[];
   acceptanceCriteria?: string;
+  productSpecs?: string;
+  attachments?: {
+    id: string;
+    filename: string;
+    contentUrl: string;
+    mimeType: string;
+  }[];
 }
 
 export interface JiraConfig {

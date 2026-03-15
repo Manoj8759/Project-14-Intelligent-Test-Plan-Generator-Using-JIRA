@@ -4,9 +4,7 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "config": { "distDir": "dist" }
     },
     {
       "src": "backend/src/index.ts",
@@ -19,11 +17,19 @@
       "dest": "backend/src/index.ts"
     },
     {
+      "src": "/templates/(.*)",
+      "dest": "backend/src/index.ts"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "frontend/dist/$1"
+      "dest": "frontend/$1"
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "DB_TYPE": "postgres"
   }
 }

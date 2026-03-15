@@ -6,6 +6,7 @@ import { createJiraClient } from '../services/jira-client';
 import { dbGet, dbAll, dbRun } from '../utils/database';
 import { secureStore } from '../utils/encryption';
 import { sanitizeJiraId, isValidJiraId } from '../utils/validators';
+import { extractProjectContext } from '../services/project-context';
 
 const router = Router();
 
@@ -57,6 +58,10 @@ router.post('/fetch', async (req, res) => {
 
     const client = createJiraClient(config);
     const ticket = await client.fetchTicket(sanitizedId);
+
+    // Extract project context (Links + Attachments)
+    const productSpecs = await extractProjectContext(client, ticket);
+    ticket.productSpecs = productSpecs;
 
     // Save to recent tickets
     const DB_TYPE = process.env.DB_TYPE || 'sqlite';

@@ -2,15 +2,16 @@
  * Test Plan Generation Routes
  */
 import { Router, Response } from 'express';
-import { createJiraClient } from '../services/jira-client';
+import { createJiraClient, JiraClient } from '../services/jira-client';
 import { createGroqProvider } from '../services/llm-providers/groq';
 import { createOllamaProvider } from '../services/llm-providers/ollama';
 import { dbGet, dbRun } from '../utils/database';
 import { secureStore } from '../utils/encryption';
-import { LLMProvider } from '../types';
+import { LLMProvider, JiraTicket } from '../types';
+import { extractProjectContext } from '../services/project-context';
+import { parseDocxBuffer } from '../services/docx-parser';
 
 const router = Router();
-
 // Get stored configs
 const getConfigs = async () => {
   const [jiraConfigRow, llmConfigRow] = await Promise.all([
@@ -60,9 +61,12 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    // Fetch ticket
+    // Fetch ticket and extract ALL project context (Links + Attachments)
     const jiraClient = createJiraClient(jiraConfig);
     const ticket = await jiraClient.fetchTicket(ticketId);
+    
+    const productSpecs = await extractProjectContext(jiraClient, ticket);
+    ticket.productSpecs = productSpecs;
 
     // Fetch template
     const template = await dbGet('SELECT content FROM templates WHERE id = ?', [templateId]);
@@ -145,9 +149,12 @@ router.get('/stream', async (req, res: Response) => {
       return;
     }
 
-    // Fetch ticket and template
+    // Fetch ticket and extract ALL project context (Links + Attachments)
     const jiraClient = createJiraClient(jiraConfig);
     const ticket = await jiraClient.fetchTicket(ticketId);
+
+    const productSpecs = await extractProjectContext(jiraClient, ticket);
+    ticket.productSpecs = productSpecs;
     const template = await dbGet('SELECT content FROM templates WHERE id = ?', [templateId]);
 
     if (!template || !template.content) {

@@ -73,6 +73,21 @@ export class JiraClient {
     return this.parseTicket(data);
   }
 
+  // Fetch attachment content
+  async fetchAttachment(url: string): Promise<Buffer> {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch attachment from ${url}: ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+
   // Parse JIRA API response to our Ticket type
   private parseTicket(data: any): JiraTicket {
     const fields = data.fields || {};
@@ -93,7 +108,13 @@ export class JiraClient {
       status: fields.status?.name || 'Unknown',
       assignee: fields.assignee?.displayName,
       labels: fields.labels || [],
-      acceptanceCriteria
+      acceptanceCriteria,
+      attachments: (fields.attachment || []).map((a: any) => ({
+        id: a.id,
+        filename: a.filename,
+        contentUrl: a.content,
+        mimeType: a.mimeType
+      }))
     };
   }
 
@@ -112,19 +133,60 @@ export class JiraClient {
     return JSON.stringify(description);
   }
 
-  // Recursively extract text from ADF
+  // Recursively extract text from ADF with improved formatting
   private extractTextFromADF(node: any): string {
     if (!node) return '';
     
-    if (typeof node === 'string') return node;
-    
-    if (node.text) return node.text;
-    
-    if (node.content && Array.isArray(node.content)) {
-      return node.content.map((child: any) => this.extractTextFromADF(child)).join('');
+    // Text nodes
+    if (node.type === 'text') {
+      let text = node.text || '';
+      // Handle marks (bold, italic, etc.)
+      const marks = (node.marks || []).map((m: any) => m.type);
+      if (marks.includes('strong')) text = `**${text}**`;
+      if (marks.includes('em')) text = `_${text}_`;
+      if (marks.includes('code')) text = `\`${text}\``;
+      return text;
     }
-    
-    return '';
+
+    // Media and other nodes
+    if (node.type === 'mention') return `@${node.attrs?.text || node.attrs?.id}`;
+    if (node.type === 'emoji') return node.attrs?.text || '';
+    if (node.type === 'hardBreak') return '\n';
+
+    // Container nodes
+    let content = '';
+    if (node.content && Array.isArray(node.content)) {
+      content = node.content.map((child: any) => this.extractTextFromADF(child)).join('');
+    }
+
+    // Block-level formatting
+    switch (node.type) {
+      case 'heading':
+        const level = node.attrs?.level || 1;
+        return `\n${'#'.repeat(level)} ${content}\n`;
+      case 'paragraph':
+        return `\n${content}\n`;
+      case 'listItem':
+        return `  - ${content}\n`;
+      case 'bulletList':
+      case 'orderedList':
+        return `\n${content}\n`;
+      case 'table':
+        return `\n[Table]\n${content}\n`;
+      case 'tableRow':
+        return `${content}\n`;
+      case 'tableHeader':
+      case 'tableCell':
+        return `| ${content} `;
+      case 'codeBlock':
+        return `\n\`\`\`\n${content}\n\`\`\`\n`;
+      case 'blockquote':
+        return `\n> ${content}\n`;
+      case 'rule':
+        return '\n---\n';
+      default:
+        return content;
+    }
   }
 
   // Extract acceptance criteria from description text

@@ -27,6 +27,7 @@ interface Ticket {
   assignee?: string;
   labels: string[];
   acceptanceCriteria?: string;
+  productSpecs?: string;
 }
 
 interface RecentTicket {
@@ -286,6 +287,19 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
+                {ticket.productSpecs && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Download className="h-3 w-3" />
+                      Scraped Product Specs
+                    </Label>
+                    <div className="text-xs mt-1 whitespace-pre-wrap max-h-40 overflow-y-auto p-2 bg-blue-50/50 rounded border border-blue-100 italic">
+                      {ticket.productSpecs.length > 500 
+                        ? ticket.productSpecs.substring(0, 500) + '...' 
+                        : ticket.productSpecs}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -398,8 +412,47 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {generatedPlan ? (
-                <div className="markdown-preview prose prose-sm max-w-none">
-                  <ReactMarkdown>{generatedPlan}</ReactMarkdown>
+                <div className="space-y-6">
+                  {/* Parsing Verified Facts & Missing Info for special display */}
+                  {(() => {
+                    const sections = {
+                      verified: generatedPlan.match(/Verified Facts:?([\s\S]*?)(?=#|$)/i)?.[1]?.trim(),
+                      missing: generatedPlan.match(/Missing \/ Unknown Information:?([\s\S]*?)(?=#|$)/i)?.[1]?.trim(),
+                      plan: generatedPlan.replace(/Verified Facts:?[\s\S]*?(?=#|$)/i, '')
+                                         .replace(/Missing \/ Unknown Information:?[\s\S]*?(?=#|$)/i, '')
+                                         .trim()
+                    };
+
+                    return (
+                      <>
+                        {sections.verified && (
+                          <Alert className="bg-green-50 border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge className="bg-green-600 hover:bg-green-600">Verified Facts</Badge>
+                            </div>
+                            <AlertDescription className="text-xs whitespace-pre-wrap prose prose-xs max-w-none">
+                              <ReactMarkdown>{sections.verified}</ReactMarkdown>
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        
+                        {sections.missing && (
+                          <Alert className="bg-yellow-50 border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-yellow-700 border-yellow-400 font-bold bg-yellow-100">Missing Information</Badge>
+                            </div>
+                            <AlertDescription className="text-xs whitespace-pre-wrap prose prose-xs max-w-none">
+                              <ReactMarkdown>{sections.missing}</ReactMarkdown>
+                            </AlertDescription>
+                          </Alert>
+                        )}
+
+                        <div className="markdown-preview prose prose-sm max-w-none pt-4 border-t">
+                          <ReactMarkdown>{sections.plan}</ReactMarkdown>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-20">
