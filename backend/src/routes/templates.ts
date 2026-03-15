@@ -11,9 +11,10 @@ import { parsePDFBuffer, validatePDFFile, extractTemplateStructure } from '../se
 
 const router = Router();
 
-// Ensure templates directory exists
+// Ensure templates directory exists (skip on Vercel as filesystem is read-only)
+const isVercel = process.env.VERCEL === '1';
 const TEMPLATES_DIR = path.join(process.cwd(), 'templates');
-if (!fs.existsSync(TEMPLATES_DIR)) {
+if (!isVercel && !fs.existsSync(TEMPLATES_DIR)) {
   fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
 }
 
@@ -120,9 +121,15 @@ router.post('/upload', (req, res, next) => {
     const id = uuidv4();
     const name = req.file.originalname.replace('.pdf', '');
 
-    // Save file to disk
-    const filePath = path.join(TEMPLATES_DIR, `${id}.pdf`);
-    fs.writeFileSync(filePath, req.file.buffer);
+    // Save file to disk (skip on Vercel)
+    if (!isVercel) {
+      try {
+        const filePath = path.join(TEMPLATES_DIR, `${id}.pdf`);
+        fs.writeFileSync(filePath, req.file.buffer);
+      } catch (e) {
+        console.warn('Failed to save template file to disk:', e);
+      }
+    }
 
     // Save to database
     const DB_TYPE = process.env.DB_TYPE || 'sqlite';
@@ -167,10 +174,16 @@ router.delete('/:id', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Cannot delete default template' });
     }
 
-    // Delete file
-    const filePath = path.join(TEMPLATES_DIR, `${req.params.id}.pdf`);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // Delete file (skip on Vercel)
+    if (!isVercel) {
+      try {
+        const filePath = path.join(TEMPLATES_DIR, `${req.params.id}.pdf`);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (e) {
+        console.warn('Failed to delete template file from disk:', e);
+      }
     }
 
     // Delete from database
