@@ -137,18 +137,8 @@ export class JiraClient {
   private extractTextFromADF(node: any): string {
     if (!node) return '';
     
-    // Text nodes
-    if (node.type === 'text') {
-      let text = node.text || '';
-      // Handle marks (bold, italic, etc.)
-      const marks = (node.marks || []).map((m: any) => m.type);
-      if (marks.includes('strong')) text = `**${text}**`;
-      if (marks.includes('em')) text = `_${text}_`;
-      if (marks.includes('code')) text = `\`${text}\``;
-      return text;
-    }
-
-    // Media and other nodes
+    // Leaf nodes
+    if (node.type === 'text') return this.applyMarks(node.text || '', node.marks);
     if (node.type === 'mention') return `@${node.attrs?.text || node.attrs?.id}`;
     if (node.type === 'emoji') return node.attrs?.text || '';
     if (node.type === 'hardBreak') return '\n';
@@ -159,11 +149,24 @@ export class JiraClient {
       content = node.content.map((child: any) => this.extractTextFromADF(child)).join('');
     }
 
-    // Block-level formatting
-    switch (node.type) {
+    return this.applyBlockFormatting(node.type, content, node.attrs);
+  }
+
+  // Handle ADF text marks (bold, italic, code)
+  private applyMarks(text: string, marks: any[] = []): string {
+    let result = text;
+    const types = marks.map((m: any) => m.type);
+    if (types.includes('strong')) result = `**${result}**`;
+    if (types.includes('em')) result = `_${result}_`;
+    if (types.includes('code')) result = `\`${result}\``;
+    return result;
+  }
+
+  // Handle ADF block-level formatting
+  private applyBlockFormatting(type: string, content: string, attrs: any = {}): string {
+    switch (type) {
       case 'heading':
-        const level = node.attrs?.level || 1;
-        return `\n${'#'.repeat(level)} ${content}\n`;
+        return `\n${'#'.repeat(attrs?.level || 1)} ${content}\n`;
       case 'paragraph':
         return `\n${content}\n`;
       case 'listItem':

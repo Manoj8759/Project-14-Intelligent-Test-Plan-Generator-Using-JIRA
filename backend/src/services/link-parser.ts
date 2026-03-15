@@ -61,6 +61,7 @@ export const parseExternalSpec = async (url: string): Promise<ExtractedSpec> => 
         content: text
       };
     } else if (contentType.includes('text/plain') || contentType.includes('text/markdown')) {
+      console.log(`📄 Scraped ${contentType} from ${url}`);
       return {
         url,
         type: 'text',
@@ -68,13 +69,14 @@ export const parseExternalSpec = async (url: string): Promise<ExtractedSpec> => 
       };
     }
 
+    console.warn(`⚠️ Unsupported content type ${contentType} for ${url}`);
     return {
       url,
       type: 'unknown',
       content: ''
     };
   } catch (error) {
-    console.warn(`Failed to parse external spec from ${url}:`, error instanceof Error ? error.message : error);
+    console.error(`❌ Failed to parse external spec from ${url}:`, error instanceof Error ? error.message : error);
     return {
       url,
       type: 'unknown',

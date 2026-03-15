@@ -33,7 +33,6 @@ if (DB_TYPE === 'sqlite') {
 }
 
 // PostgreSQL client (lazy loaded)
-let pgClient: any = null;
 let pgPool: any = null;
 
 const getPostgresPool = async () => {
