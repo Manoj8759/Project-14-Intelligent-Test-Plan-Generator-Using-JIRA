@@ -38,6 +38,17 @@ export default function SettingsPage() {
   const [templateToDelete, setTemplateToDelete] = useState<any>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  
+  // TestRail State
+  const [testrailConfig, setTestrailConfig] = useState({
+    baseUrl: '',
+    username: '',
+    apiKey: '',
+    projectId: '',
+    suiteId: '',
+  });
+  const [testrailStatus, setTestrailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [testrailMessage, setTestrailMessage] = useState('');
 
   // Load saved configs on mount
   useEffect(() => {
@@ -47,9 +58,10 @@ export default function SettingsPage() {
 
   const loadConfigs = async () => {
     try {
-      const [jiraRes, llmRes] = await Promise.all([
+      const [jiraRes, llmRes, testrailRes] = await Promise.all([
         settingsApi.getJiraConfig(),
         settingsApi.getLlmConfig(),
+        settingsApi.getTestRailConfig(),
       ]);
       
       if (jiraRes.data?.configured) {
@@ -63,6 +75,10 @@ export default function SettingsPage() {
           groq: { ...prev.groq, ...llmRes.data.groq },
           ollama: { ...prev.ollama, ...llmRes.data.ollama },
         }));
+      }
+
+      if (testrailRes.data?.configured) {
+        setTestrailConfig(prev => ({ ...prev, ...testrailRes.data }));
       }
     } catch (error) {
       console.error('Failed to load configs:', error);
@@ -150,6 +166,37 @@ export default function SettingsPage() {
     }
   };
 
+  // TestRail Handlers
+  const testTestRailConnection = async () => {
+    setTestrailStatus('loading');
+    try {
+      const res = await settingsApi.testTestRailConnection(testrailConfig) as { success: boolean; message: string };
+      if (res.success) {
+        setTestrailStatus('success');
+        setTestrailMessage(res.message);
+      } else {
+        setTestrailStatus('error');
+        setTestrailMessage(res.message);
+      }
+    } catch (error: any) {
+      setTestrailStatus('error');
+      setTestrailMessage(error.message);
+    }
+  };
+
+  const saveTestRailConfig = async () => {
+    try {
+      await settingsApi.saveTestRailConfig({
+        ...testrailConfig,
+        projectId: Number(testrailConfig.projectId),
+        suiteId: Number(testrailConfig.suiteId),
+      });
+      alert('TestRail configuration saved!');
+    } catch (error: any) {
+      alert('Failed to save: ' + error.message);
+    }
+  };
+
   // Template Handlers
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -201,9 +248,10 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="jira" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
           <TabsTrigger value="jira">JIRA</TabsTrigger>
           <TabsTrigger value="llm">LLM</TabsTrigger>
+          <TabsTrigger value="testrail">TestRail</TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
 
@@ -424,7 +472,100 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Templates */}
+        {/* TestRail Configuration */}
+        <TabsContent value="testrail">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>TestRail Configuration</CardTitle>
+                  <CardDescription>Connect to your TestRail instance</CardDescription>
+                </div>
+                {testrailStatus === 'success' && (
+                  <Badge variant="default" className="bg-green-500">
+                    <Check className="h-3 w-3 mr-1" /> Connected
+                  </Badge>
+                )}
+                {testrailStatus === 'error' && (
+                  <Badge variant="destructive">
+                    <X className="h-3 w-3 mr-1" /> Failed
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {testrailMessage && (
+                <Alert variant={testrailStatus === 'error' ? 'destructive' : 'default'}>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{testrailMessage}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="tr-url">TestRail Base URL</Label>
+                <Input
+                  id="tr-url"
+                  placeholder="https://company.testrail.io"
+                  value={testrailConfig.baseUrl}
+                  onChange={(e) => setTestrailConfig({ ...testrailConfig, baseUrl: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tr-username">Username / Email</Label>
+                  <Input
+                    id="tr-username"
+                    placeholder="you@example.com"
+                    value={testrailConfig.username}
+                    onChange={(e) => setTestrailConfig({ ...testrailConfig, username: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tr-token">API Token / Password</Label>
+                  <Input
+                    id="tr-token"
+                    type="password"
+                    placeholder="••••••••••••••••"
+                    value={testrailConfig.apiKey}
+                    onChange={(e) => setTestrailConfig({ ...testrailConfig, apiKey: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tr-project">Project ID</Label>
+                  <Input
+                    id="tr-project"
+                    type="number"
+                    placeholder="1"
+                    value={testrailConfig.projectId}
+                    onChange={(e) => setTestrailConfig({ ...testrailConfig, projectId: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tr-suite">Suite ID</Label>
+                  <Input
+                    id="tr-suite"
+                    type="number"
+                    placeholder="1"
+                    value={testrailConfig.suiteId}
+                    onChange={(e) => setTestrailConfig({ ...testrailConfig, suiteId: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={testTestRailConnection} disabled={testrailStatus === 'loading'}>
+                  {testrailStatus === 'loading' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Test Connection
+                </Button>
+                <Button variant="outline" onClick={saveTestRailConfig}>Save Configuration</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="templates">
           <Card>
             <CardHeader>

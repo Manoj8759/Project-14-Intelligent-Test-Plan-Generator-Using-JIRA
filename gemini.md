@@ -11,7 +11,7 @@
 | Attribute | Value |
 |-----------|-------|
 | **Project Name** | Intelligent Test Plan Generator |
-| **Status** | 🟢 Phase 1: Blueprint Complete |
+| **Status** | 🟡 Phase 6: Automation Framework (In Progress) |
 | **Created** | 2026-02-14 |
 
 ---
@@ -29,6 +29,7 @@ Build a full-stack web application that **automates test plan creation** by inte
 | **JIRA REST API v3** | Fetch ticket data (summary, description, AC) | Required |
 | **Groq API** | Cloud LLM provider (llama3-70b, mixtral-8x7b) | Required |
 | **Ollama Local API** | Local LLM provider (`http://localhost:11434`) | Required |
+| **TestRail API** | Push generated test cases to Central Test MGMT | Required |
 | **SQLite** | Local storage for settings, history, templates | Built-in |
 
 ---
@@ -60,7 +61,14 @@ Build a full-stack web application that **automates test plan creation** by inte
     "name": "string",
     "content": "string (extracted text from PDF)",
     "isDefault": "boolean"
-  }]
+  }],
+  "testrail": {
+    "baseUrl": "string (https://company.testrail.io)",
+    "username": "string",
+    "apiKey": "string (encrypted)",
+    "projectId": "number",
+    "suiteId": "number"
+  }
 }
 ```
 
@@ -123,6 +131,23 @@ Build a full-stack web application that **automates test plan creation** by inte
 2. Fallback UI when LLM fails
 3. Connection status indicators for all services
 
+### TestRail Rules
+1. **Parsing:** Extract test cases from markdown tables or bullet points.
+2. **Field Mapping:** 
+   - Markdown "Steps" -> TestRail "Steps"
+   - Markdown "Expected Result" -> TestRail "Expected Result"
+   - Markdown "Title/Description" -> TestRail "Title"
+3. **Draft Mode:** Always push cases to a "Draft" or "JIRA Import" section if possible.
+
+### VWO Platform Automation Framework
+- **Goal:** Run E2E tests for VWO scenarios and sync results bidirectionally.
+- **Trigger:** Manual CLI or CI pipeline `npx playwright test`.
+- **Sync Managers:**
+  - `automation/sync-manager.ts`: Pushes test cases and results to TestRail API.
+  - `automation/jira-manager.ts`: Creates JIRA tasks on failure with screenshots.
+- **Deduplication:** JQL searches for open Tasks with matching `[VWO Platform] C{ID}` before creating duplicates.w JIRA ticket.
+6. **Retention:** Evidence kept for 30 days locally in `.tmp/evidence/`.
+
 ---
 
 ## 🏗️ Architectural Invariants
@@ -156,8 +181,11 @@ GET  /api/templates            // List available templates
 ### File Structure (Required)
 ```
 /intelligent-test-plan-agent
-├── /frontend          # React + Vite + TypeScript
 ├── /backend           # Express + SQLite
+├── /frontend          # React + Vite + TypeScript
+├── /automation        # Playwright E2E Framework
+├── /architecture      # ANT Layer 1 SOPs
+├── /tools             # ANT Layer 3 Python Scripts
 ├── /templates         # Default testplan.pdf storage
 └── README.md
 ```

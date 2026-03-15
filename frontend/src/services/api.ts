@@ -50,6 +50,13 @@ export const settingsApi = {
   testLlmConnection: (config: { provider: string; groq?: any; ollama?: any }) =>
     fetchApi('/settings/llm/test', { method: 'POST', body: JSON.stringify(config) }),
   getOllamaModels: () => fetchApi<{ success: boolean; data: string[] }>('/settings/llm/models'),
+  
+  // TestRail
+  getTestRailConfig: () => fetchApi<{ success: boolean; data: any }>('/settings/testrail'),
+  saveTestRailConfig: (config: { baseUrl: string; username: string; apiKey: string; projectId: number; suiteId: number }) =>
+    fetchApi('/settings/testrail', { method: 'POST', body: JSON.stringify(config) }),
+  testTestRailConnection: (config: { baseUrl: string; username: string; apiKey: string }) =>
+    fetchApi('/settings/testrail/test', { method: 'POST', body: JSON.stringify(config) }),
 };
 
 // JIRA API
@@ -87,6 +94,21 @@ export const testplanApi = {
       body: JSON.stringify(params),
     }),
   getHistory: () => fetchApi<{ success: boolean; data: any[] }>('/testplan/history'),
+  
+  // Local Workspace Storage
+  saveToProject: (params: { ticketId: string; content: string; planId?: number }) =>
+    fetchApi<{ success: boolean; message: string; data: any }>('/testplan/save', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }),
+  getSavedCases: (ticketId: string) => 
+    fetchApi<{ success: boolean; data: any[] }>(`/testplan/cases/${ticketId}`),
+
+  pushToTestRail: (params: { ticketId: string; content: string }) =>
+    fetchApi<{ success: boolean; message: string; data: any }>('/testplan/push', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }),
   streamGenerate: (params: { ticketId: string; templateId: string; provider?: string }) => {
     const query = new URLSearchParams(params as any).toString();
     return new EventSource(`${API_BASE}/testplan/stream?${query}`);

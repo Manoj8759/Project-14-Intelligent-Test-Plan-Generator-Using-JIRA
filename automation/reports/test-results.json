@@ -1,0 +1,295 @@
+{
+  "config": {
+    "configFile": "D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\playwright.config.ts",
+    "rootDir": "D:/Pramod Dutta/Project-14-Intelligent-Test-Plan-Generator-Using-JIRA/automation/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/Pramod Dutta/Project-14-Intelligent-Test-Plan-Generator-Using-JIRA/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "D:/Pramod Dutta/Project-14-Intelligent-Test-Plan-Generator-Using-JIRA/automation/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "automation/reports"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "automation/reports/test-results.json"
+        }
+      ],
+      [
+        "D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\automation\\reporter.ts",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "anti-gravity.spec.ts",
+      "file": "anti-gravity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Anti-Gravity",
+          "file": "anti-gravity.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Zero-Gravity Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 803,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m0.1\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m0.1\u001b[39m\n    at D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\automation\\tests\\anti-gravity.spec.ts:7:21",
+                        "location": {
+                          "file": "D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\automation\\tests\\anti-gravity.spec.ts",
+                          "column": 21,
+                          "line": 7
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  5 |\u001b[39m     \u001b[90m// Scenario: Activate core and verify suspension\u001b[39m\n \u001b[90m  6 |\u001b[39m     \u001b[36mconst\u001b[39m gravity \u001b[33m=\u001b[39m \u001b[35m0.1\u001b[39m\u001b[33m;\u001b[39m \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m     expect(gravity)\u001b[33m.\u001b[39mtoBe(\u001b[35m0.0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m\n \u001b[90m 10 |\u001b[39m   test(\u001b[32m'Lift Mechanisms'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\automation\\tests\\anti-gravity.spec.ts",
+                            "column": 21,
+                            "line": 7
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m0.1\u001b[39m\n\n   5 |     // Scenario: Activate core and verify suspension\n   6 |     const gravity = 0.1; \n>  7 |     expect(gravity).toBe(0.0);\n     |                     ^\n   8 |   });\n   9 |\n  10 |   test('Lift Mechanisms', async ({ page }) => {\n    at D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\automation\\tests\\anti-gravity.spec.ts:7:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-15T14:30:31.108Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\test-results\\anti-gravity-Anti-Gravity-Zero-Gravity-Validation-chromium\\test-failed-1.png"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Pramod Dutta\\Project-14-Intelligent-Test-Plan-Generator-Using-JIRA\\automation\\tests\\anti-gravity.spec.ts",
+                        "column": 21,
+                        "line": 7
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e1b0d338bd43a45081c1-7fbc4f2f55ab4a35a550",
+              "file": "anti-gravity.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "Lift Mechanisms",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 477,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-15T14:30:34.772Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1b0d338bd43a45081c1-15a7620d76a960250b2f",
+              "file": "anti-gravity.spec.ts",
+              "line": 10,
+              "column": 7
+            },
+            {
+              "title": "Stability Controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 287,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-15T14:30:35.459Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1b0d338bd43a45081c1-73c57ee582f90d4056b2",
+              "file": "anti-gravity.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "Payload Limits",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 183,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-15T14:30:35.793Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1b0d338bd43a45081c1-6032cd0f820dfbb55ded",
+              "file": "anti-gravity.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Emergency Protocols",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 190,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-15T14:30:36.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1b0d338bd43a45081c1-2709699a6b44fd947204",
+              "file": "anti-gravity.spec.ts",
+              "line": 22,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-15T14:30:28.656Z",
+    "duration": 7914.323,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

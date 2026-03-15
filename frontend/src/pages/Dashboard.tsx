@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, Wand2, Copy, Download, FileText, Clock, FileDown, FileType, FileIcon, ChevronDown } from 'lucide-react';
+import { Search, Loader2, Wand2, Copy, Download, FileText, Clock, FileDown, FileType, FileIcon, ChevronDown, Share2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,8 @@ export default function Dashboard() {
   const [generating, setGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
   const [generatedPlan, setGeneratedPlan] = useState('');
+  const [pushing, setPushing] = useState(false);
+  const [pushSuccess, setPushSuccess] = useState('');
   const [error, setError] = useState('');
 
   // Load templates and recent tickets on mount
@@ -165,6 +167,26 @@ export default function Dashboard() {
       await downloadApi.downloadPdf(generatedPlan, filename);
     } catch (error: any) {
       setError(error.message || 'Failed to download PDF');
+    }
+  };
+
+  const handlePushToTestRail = async () => {
+    if (!ticket || !generatedPlan) return;
+    
+    setPushing(true);
+    setError('');
+    setPushSuccess('');
+    
+    try {
+      const res = await testplanApi.pushToTestRail({
+        ticketId: ticket.key,
+        content: generatedPlan,
+      });
+      setPushSuccess(res.message);
+    } catch (error: any) {
+      setError(error.message || 'Failed to push to TestRail. Please check your settings.');
+    } finally {
+      setPushing(false);
     }
   };
 
@@ -370,6 +392,16 @@ export default function Dashboard() {
               </CardTitle>
               {generatedPlan && (
                 <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handlePushToTestRail}
+                    disabled={pushing}
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    {pushing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Share2 className="h-4 w-4 mr-1" />}
+                    Push to TestRail
+                  </Button>
                   <Button variant="outline" size="sm" onClick={handleCopy}>
                     <Copy className="h-4 w-4 mr-1" />
                     Copy
@@ -411,6 +443,13 @@ export default function Dashboard() {
               )}
             </CardHeader>
             <CardContent>
+              {pushSuccess && (
+                <Alert className="bg-green-50 border-green-200 mb-4">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-700">{pushSuccess}</AlertDescription>
+                </Alert>
+              )}
+
               {generatedPlan ? (
                 <div className="space-y-6">
                   {/* Parsing Verified Facts & Missing Info for special display */}

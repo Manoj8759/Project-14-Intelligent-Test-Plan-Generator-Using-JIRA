@@ -13,7 +13,8 @@ const router = Router();
 // Account names for secure storage
 const ACCOUNTS = {
   JIRA_TOKEN: 'jira-api-token',
-  GROQ_KEY: 'groq-api-key'
+  GROQ_KEY: 'groq-api-key',
+  TESTRAIL_KEY: 'testrail-api-key'
 };
 
 // GET /api/settings/jira - Get connection status
@@ -48,19 +49,19 @@ router.get('/jira', async (req, res) => {
 router.post('/jira', async (req, res) => {
   try {
     const { baseUrl, username, apiToken } = req.body;
+    const finalBaseUrl = baseUrl || 'https://manoj8759mar26-1773504851382.atlassian.net';
 
-    if (!baseUrl || !username || !apiToken) {
+    if (!finalBaseUrl || !username || !apiToken) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Missing required fields: baseUrl, username, apiToken' 
+        error: 'Missing required fields: username, apiToken' 
       });
     }
 
     // Store encrypted token
     await secureStore.setPassword(ACCOUNTS.JIRA_TOKEN, apiToken);
 
-    // Store config (without token)
-    const config = { baseUrl, username };
+    const config = { baseUrl: finalBaseUrl, username };
     const DB_TYPE = process.env.DB_TYPE || 'sqlite';
     if (DB_TYPE === 'postgres') {
       await dbRun(
@@ -218,6 +219,60 @@ router.get('/llm/models', async (req, res) => {
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
+  }
+});
+
+// GET /api/settings/testrail - Get TestRail configuration
+router.get('/testrail', async (req, res) => {
+  try {
+    const config = await dbGet('SELECT value FROM settings WHERE key = ?', ['testrail_config']);
+    
+    if (!config || !config.value) {
+      return res.json({ success: true, data: { configured: false } });
+    }
+
+    const parsed = JSON.parse(config.value);
+    delete parsed.apiKey; // Don't return actual key
+    
+    res.json({ success: true, data: { configured: true, ...parsed } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// POST /api/settings/testrail - Save TestRail configuration
+router.post('/testrail', async (req, res) => {
+  try {
+    const { baseUrl, username, apiKey, projectId, suiteId } = req.body;
+
+    if (apiKey) {
+      await secureStore.setPassword(ACCOUNTS.TESTRAIL_KEY, apiKey);
+    }
+
+    const config = { baseUrl, username, projectId, suiteId };
+    const DB_TYPE = process.env.DB_TYPE || 'sqlite';
+    
+    const query = DB_TYPE === 'postgres' 
+      ? `INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`
+      : 'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)';
+
+    await dbRun(query, ['testrail_config', JSON.stringify({ ...config, hasKey: !!apiKey })]);
+    res.json({ success: true, message: 'TestRail configuration saved' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// POST /api/settings/testrail/test - Test connection
+router.post('/testrail/test', async (req, res) => {
+  try {
+    const { baseUrl, username, apiKey } = req.body;
+    const { createTestRailClient } = await import('../services/testrail-client');
+    const client = createTestRailClient({ baseUrl, username, apiKey });
+    const result = await client.testConnection();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 

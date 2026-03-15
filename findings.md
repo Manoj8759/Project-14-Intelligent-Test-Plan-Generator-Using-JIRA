@@ -8,7 +8,9 @@
 
 | Date | Finding | Source | Impact |
 |------|---------|--------|--------|
-| | | | |
+| 2026-03-15 | Vercel Serverless Constraints | Deployment | Found that Vercel filesystem is read-only, causing crashes on `mkdirSync` |
+| 2026-03-15 | Puppeteer Shared Libs | Deployment | Puppeteer Requires dynamic import or a dedicated layer/plugin for serverless |
+| 2026-03-15 | Relative API Paths | Frontend | Frontend must use `/api` relative paths on same-origin monorepos to avoid CORS |
 
 ---
 
@@ -34,15 +36,17 @@
 
 ## ⚠️ Constraints & Limitations
 
-<!-- Document any technical or business constraints discovered -->
-- *None yet documented*
+- **Read-Only Filesystem:** Vercel/Serverless environments do not allow disk writes. Gated `templates` storage and `SQLite` initialization to prevent runtime crashes.
+- **Puppeteer in Serverless:** Standard `puppeteer` can fail due to missing shared libraries; moved to dynamic import as a precaution.
+- **Monorepo Routing:** SPA routing on Vercel requires specific rewrite rules in `vercel.json` to handle client-side URLs.
 
 ---
 
 ## 💡 Insights
 
-<!-- Key insights that influence architecture or design -->
-- *None yet documented*
+- **Horizontal Scaling:** Transitioning to Postgres (Neon/Vercel) from SQLite is necessary for serverless environments.
+- **Parallel Context Extraction:** Using `Promise.all` for JIRA attachments significantly improves LLM generation speed.
+- **Developer Attribution:** Centrally managed footer text ensures consistency across environments.
 
 ---
 
@@ -55,4 +59,4 @@
 
 ---
 
-*Last Updated: 2026-02-14*
+*Last Updated: 2026-03-15*

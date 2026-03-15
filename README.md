@@ -161,7 +161,14 @@ A full-stack web application that automates test plan creation by integrating JI
 │   │   ├── pages/         # Page components
 │   │   └── services/      # API client
 │   └── public/
-└── template/              # Sample test plan PDF
+├── automation/            # JIRA automation scripts
+│   ├── jira-manager.ts   # Create/update JIRA tasks
+│   ├── sync-manager.ts   # TestRail sync
+│   ├── find-duplicates.ts # Find duplicate JIRA tasks
+│   └── cleanup-duplicates.ts # Remove duplicate tasks
+├── architecture/          # SOP documentation
+├── template/              # Sample test plan PDF
+└── playwright.config.ts   # E2E test configuration
 ```
 
 ### Available Scripts
@@ -172,6 +179,7 @@ A full-stack web application that automates test plan creation by integrating JI
 | `npm run dev:backend` | Start backend only |
 | `npm run dev:frontend` | Start frontend only |
 | `npm run build` | Build for production |
+| `npx playwright test` | Run E2E tests |
 | `npm run start` | Start production server |
 
 ### API Endpoints
@@ -187,6 +195,24 @@ A full-stack web application that automates test plan creation by integrating JI
 | `/api/templates/upload` | POST | Upload PDF |
 | `/api/testplan/generate` | POST | Generate test plan |
 | `/api/testplan/history` | GET | Generation history |
+
+### Automation Scripts
+
+The `automation/` folder contains scripts for JIRA task management:
+
+| Script | Description |
+|--------|-------------|
+| `jira-manager.ts` | Create JIRA tasks, check duplicates, add comments, link issues |
+| `sync-manager.ts` | Sync test cases to TestRail |
+| `find-duplicates.ts` | Find duplicate JIRA tasks by description |
+| `cleanup-duplicates.ts` | Remove duplicate JIRA tasks (keeps oldest) |
+| `test-connection.ts` | Test JIRA API connection |
+
+**Running automation scripts:**
+```bash
+cd automation
+npx ts-node jira-manager.ts
+```
 
 ## 🔒 Security
 

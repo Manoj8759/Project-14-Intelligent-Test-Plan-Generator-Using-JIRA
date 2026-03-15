@@ -51,3 +51,8 @@ yarn-error.log*
 # Temporary files
 .tmp/
 *.tmp
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.auth/

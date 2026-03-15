@@ -308,6 +308,120 @@
 #### Status
 - **Feature:** ✅ COMPLETE - PRD integration is now much more robust, supporting multiple formats and sources.
 
+### 2026-03-15 - Refinement & Vercel Cleanup
+
+#### Actions Taken
+- [x] **Code Optimization & Refactoring:**
+  - Improved JIRA ADF parsing logic into modular helper methods (`applyMarks`, `applyBlockFormatting`).
+  - Refactored frontend API layer to deduplicate download logic.
+  - Parallelized JIRA attachment processing (PDF/DOCX) using `Promise.all`.
+- [x] **Developer Attribution:**
+  - Corrected footer in `App.tsx` to display **"Developed by Manoj8759"**.
+  - Verified footer across local and production builds.
+- [x] **Vercel Deployment & Fixes:**
+  - Successfully connected project to Neon Serverless Postgres.
+  - Fixed **500 Internal Server Error** in production caused by read-only filesystem writes in `templates` route.
+  - Implemented dynamic import for `puppeteer` to prevent startup crashes.
+  - Fixed CORS and "Failed to fetch" errors by switching to relative API paths in `.env.production`.
+- [x] **Project Decommissioning (as requested):**
+  - Assisted user in deleting the Vercel project to stop cloud services.
+  - Verified code is fully optimized for local use with SQLite/Locahost fallback.
+
+#### Files Modified
+- `backend/src/services/jira-client.ts` - Refactored ADF parsing
+- `backend/src/services/project-context.ts` - Parallelized logic
+- `backend/src/index.ts` - Vercel startup fixes
+- `backend/src/routes/templates.ts` - FS write gating
+- `frontend/src/App.tsx` - Updated credit
+- `frontend/src/services/api.ts` - Refactored downloadApi
+- `frontend/.env.production` - Switched to relative API URL
+
+#### Status
+- **Phase:** ✅ COMPLETE - Code is optimized, credits are corrected, and deployment lessons have been integrated into local architecture.
+
+### 2026-03-15 - Feature: TestRail Integration
+
+#### Actions Taken
+- [x] **TestRail Service Implementation:**
+  - Created `backend/src/services/testrail-client.ts` for API v2 communication.
+  - Implemented automated section creation for JIRA-specific imports.
+- [x] **Smart Markdown Parsing:**
+  - Created `backend/src/services/test-case-parser.ts` to extract structured data from LLM-generated tables and lists.
+  - Supports automatic mapping of "Steps" and "Expected Results" to TestRail fields.
+- [x] **Full-Stack UI/UX:**
+  - Added TestRail tab to Settings with connection testing.
+  - Added "Push to TestRail" button to the Dashboard with real-time feedback.
+  - Implemented secure API key storage for TestRail credentials.
+
+#### Files Modified
+- `backend/src/services/testrail-client.ts` - New Service
+- `backend/src/services/test-case-parser.ts` - New Service
+- `backend/src/routes/settings.ts` - Added TR config routes
+- `backend/src/routes/testplan.ts` - Added TR push route
+- `frontend/src/services/api.ts` - Added TR endpoints
+- `frontend/src/pages/Settings.tsx` - Added configuration UI
+- `frontend/src/pages/Dashboard.tsx` - Added push functionality
+
+#### Status
+- **Feature:** ✅ COMPLETE - Test cases can now be pushed directly from the UI to TestRail projects.
+
+### 2026-03-15 - Feature: Anti-Gravity E2E Automation Framework
+
+#### Actions Taken
+- [x] **Bidirectional Sync Framework:**
+  - Implemented `automation/sync-manager.ts` for automated TestRail case creation and result reporting.
+  - Implemented `automation/jira-manager.ts` for automated defect creation with evidence attachment.
+- [x] **Evidence Collection:**
+  - Configured Playwright to capture screenshots on failure.
+  - Custom reporter (`automation/reporter.ts`) handles multi-platform evidence upload (JIRA + TestRail).
+- [x] **Traceability Database:**
+  - Extended SQLite schema to track `testrail_id` and `jira_bug_id` for every test scenario.
+  - Implemented automatic JIRA-TestRail linking logic via the "References" and "Defects" fields.
+- [x] **Testing & Verification:**
+  - Successfully ran a simulation batch verifying that failures trigger bug creation while passes update TestRail statuses.
+
+#### Files Created/Modified
+- `automation/sync-manager.ts`
+- `automation/jira-manager.ts`
+- `automation/reporter.ts`
+- `automation/tests/anti-gravity.spec.ts`
+- `playwright.config.ts`
+- `backend/src/utils/database.ts`
+
+#### Status
+- **Automation:** ✅ COMPLETE - Bidirectional JIRA-TestRail sync is live.
+
+### 2026-03-15 - Feature: Live JIRA Integration & PRD LLM Extraction
+
+#### Actions Taken
+- [x] **Live Environment Configuration:**
+  - Created `.env` and modified `jira-manager.ts` to connect to live JIRA (`manoj8759mar26-1773504851382.atlassian.net`) using User API tokens.
+  - Queried available issue types for the `SCRUM` project and mapped automated defects to "Task" (Bug type was unavailable).
+- [x] **Full E2E Cycle Verification:**
+  - Ran `run-full-cycle.ts` in live mode, automatically creating `SCRUM-5` for an intentional assertion failure with Playwright evidence attached.
+- [x] **PRD Extraction & LLM Generation:**
+  - Built `fetch-scrum3.ts` to programmatically download the PRD attachment (`Product Requirements Document.docx`) from `SCRUM-3`.
+  - Built `generate-from-prd.ts` utilizing the `mammoth` parser and `Groq LLM (llama-3.3-70b-versatile)`.
+  - Securely loaded the Groq API key from SQLite/Vercel-secure storage.
+  - Re-ran the LLM engine against the downloaded DOCX, generating 8 high-quality scenario-based test cases for the "VWO Digital Experience" module.
+  - Automatically bulk-pushed the 8 test cases to JIRA (`SCRUM-16` to `SCRUM-23`), establishing relational issue links `Relates` pointing back to the parent ticket `SCRUM-3`.
+- [x] **Test Execution & Linking Workflow Refinement:**
+  - Tracked JIRA Issue IDs (e.g. `SCRUM-24`) natively in the local SQL database across execution boundaries.
+  - Updated `reporter.ts` and `jira-manager.ts` to support rich JIRA commenting with Execution timestamps, Duration, and Error Stacktraces.
+  - If tests pass, marked the tasks with a `passed` label and automatically executed the "Done" transition (id: 41).
+  - Configured failed tests to upload full `screenshot.png` evidence to both the blocked Test Case and the newly created Regression Defect.
+  - Programmatically implemented JIRA Issue Linking during failure: linked the new defect to the original test case using the `Blocks` or `Relates` link type.
+
+#### Documents Modified/Created
+- `.env`
+- `automation/test-connection.ts`
+- `automation/fetch-scrum3.ts`
+- `automation/generate-from-prd.ts`
+- `automation/jira-manager.ts`
+
+#### Status
+- **Framework Integration:** ✅ COMPLETE - The system can now read real JIRA PRDs, use LLMs to write test cases, and push real execution bugs back to JIRA.
+
 ---
 
 *Last Updated: 2026-03-15*

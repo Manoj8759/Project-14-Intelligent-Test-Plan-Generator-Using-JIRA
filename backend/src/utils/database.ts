@@ -11,7 +11,7 @@ const DB_TYPE = process.env.DB_TYPE || 'sqlite';
 const DATABASE_URL = process.env.DATABASE_URL;
 
 // SQLite setup
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const DB_PATH = path.join(DATA_DIR, 'app.db');
 
 // Ensure data directory exists for SQLite
@@ -185,6 +185,21 @@ const initPostgresTables = async (): Promise<void> => {
       generated_content TEXT NOT NULL,
       provider_used VARCHAR(50) NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    
+    // Extracted test cases
+    `CREATE TABLE IF NOT EXISTS test_cases (
+      id SERIAL PRIMARY KEY,
+      ticket_id VARCHAR(255) NOT NULL,
+      plan_id INTEGER REFERENCES test_plan_history(id),
+      title TEXT NOT NULL,
+      steps TEXT,
+      expected_result TEXT,
+      priority VARCHAR(50),
+      testrail_id INTEGER,
+      jira_bug_id VARCHAR(50),
+      is_automated BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`
   ];
 
@@ -270,6 +285,21 @@ const initSqliteTables = async (): Promise<void> => {
       template_id TEXT,
       generated_content TEXT NOT NULL,
       provider_used TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    // Extracted test cases
+    `CREATE TABLE IF NOT EXISTS test_cases (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id TEXT NOT NULL,
+      plan_id INTEGER REFERENCES test_plan_history(id),
+      title TEXT NOT NULL,
+      steps TEXT,
+      expected_result TEXT,
+      priority TEXT,
+      testrail_id INTEGER,
+      jira_bug_id TEXT,
+      is_automated INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`
   ];

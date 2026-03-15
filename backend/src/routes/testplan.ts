@@ -5,10 +5,12 @@ import { Router, Response } from 'express';
 import { createJiraClient, JiraClient } from '../services/jira-client';
 import { createGroqProvider } from '../services/llm-providers/groq';
 import { createOllamaProvider } from '../services/llm-providers/ollama';
-import { dbGet, dbRun } from '../utils/database';
+import { dbGet, dbRun, dbAll } from '../utils/database';
 import { secureStore } from '../utils/encryption';
 import { LLMProvider, JiraTicket } from '../types';
 import { extractProjectContext } from '../services/project-context';
+import { parseMarkdownTestCases, mapToTestRail } from '../services/test-case-parser';
+import { createTestRailClient } from '../services/testrail-client';
 import { parseDocxBuffer } from '../services/docx-parser';
 
 const router = Router();
@@ -206,6 +208,140 @@ router.get('/history', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});
+
+// POST /api/testplan/push - Push test cases to TestRail
+router.post('/push', async (req, res) => {
+  try {
+    const { ticketId, content } = req.body;
+
+    if (!ticketId || !content) {
+      return res.status(400).json({ success: false, error: 'ticketId and content are required' });
+    }
+
+    // 1. Get TestRail config
+    const testrailConfigRow = await dbGet('SELECT value FROM settings WHERE key = ?', ['testrail_config']);
+    if (!testrailConfigRow) {
+      return res.status(400).json({ success: false, error: 'TestRail not configured' });
+    }
+
+    const trConfig = JSON.parse(testrailConfigRow.value);
+    trConfig.apiKey = await secureStore.getPassword('testrail-api-key');
+
+    if (!trConfig.apiKey || !trConfig.projectId || !trConfig.suiteId) {
+      return res.status(400).json({ success: false, error: 'Incomplete TestRail configuration' });
+    }
+
+    // 2. Parse test cases from markdown
+    const parsedCases = parseMarkdownTestCases(content);
+    if (parsedCases.length === 0) {
+      return res.status(400).json({ success: false, error: 'No test cases found in content to push' });
+    }
+
+    // 3. Initialize client and push
+    const client = createTestRailClient(trConfig);
+    const sectionId = await client.getOrCreateSection(trConfig.projectId, trConfig.suiteId, ticketId);
+
+    const results = [];
+    for (const pCase of parsedCases) {
+      const trCase = mapToTestRail(pCase);
+      const result = await client.addCase(sectionId, trCase);
+      results.push(result);
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully pushed ${results.length} test cases to TestRail`,
+      data: { sectionId, casesAdded: results.length }
+    });
+  } catch (error) {
+    console.error('TestRail push error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// POST /api/testplan/save - Save test cases to local project database
+router.post('/save', async (req, res) => {
+  try {
+    const { ticketId, content, planId } = req.body;
+
+    if (!ticketId || !content) {
+      return res.status(400).json({ success: false, error: 'ticketId and content are required' });
+    }
+
+    // 1. Parse test cases from markdown
+    const parsedCases = parseMarkdownTestCases(content);
+    if (parsedCases.length === 0) {
+      return res.status(400).json({ success: false, error: 'No structured test cases found to save' });
+    }
+
+    // 2. Clear existing cases for this ticket to avoid duplicates if re-saving
+    const DB_TYPE = process.env.DB_TYPE || 'sqlite';
+    if (DB_TYPE === 'postgres') {
+      await dbRun('DELETE FROM test_cases WHERE ticket_id = $1', [ticketId]);
+    } else {
+      await dbRun('DELETE FROM test_cases WHERE ticket_id = ?', [ticketId]);
+    }
+
+    // 3. Save to database
+    const results = [];
+    for (const pCase of parsedCases) {
+      const steps = pCase.steps.map(s => s.content).join('\n');
+      const expected = pCase.steps.map(s => s.expected).join('\n');
+      
+      if (DB_TYPE === 'postgres') {
+        await dbRun(
+          `INSERT INTO test_cases (ticket_id, plan_id, title, steps, expected_result, priority) 
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [ticketId, planId || null, pCase.title, steps, expected, pCase.priority || 'Medium']
+        );
+      } else {
+        await dbRun(
+          `INSERT INTO test_cases (ticket_id, plan_id, title, steps, expected_result, priority) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [ticketId, planId || null, pCase.title, steps, expected, pCase.priority || 'Medium']
+        );
+      }
+      results.push(pCase);
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully saved ${results.length} test cases to the project`,
+      data: { casesSaved: results.length }
+    });
+  } catch (error) {
+    console.error('Save cases error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/testplan/cases/:ticketId - Get saved test cases for a ticket
+router.get('/cases/:ticketId', async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const DB_TYPE = process.env.DB_TYPE || 'sqlite';
+    
+    let cases;
+    if (DB_TYPE === 'postgres') {
+      cases = await dbAll('SELECT * FROM test_cases WHERE ticket_id = $1 ORDER BY id ASC', [ticketId]);
+    } else {
+      cases = await dbAll('SELECT * FROM test_cases WHERE ticket_id = ? ORDER BY id ASC', [ticketId]);
+    }
+
+    res.json({ success: true, data: cases || [] });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
