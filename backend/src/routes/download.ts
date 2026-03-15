@@ -4,7 +4,7 @@
 import { Router } from 'express';
 import { marked } from 'marked';
 import HTMLtoDOCX from 'html-to-docx';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer'; // Moved to dynamic import inside handler
 
 const router = Router();
 
@@ -215,8 +215,9 @@ router.post('/pdf', async (req, res) => {
     const title = filename || 'Test Plan';
     const fullHtml = getPdfTemplate(title, htmlContent);
 
-    // Launch puppeteer
-    browser = await puppeteer.launch({
+    // Launch puppeteer with dynamic import
+    const puppeteer = await import('puppeteer');
+    browser = await puppeteer.default.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });

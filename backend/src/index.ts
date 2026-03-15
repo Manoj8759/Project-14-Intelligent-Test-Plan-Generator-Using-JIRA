@@ -51,22 +51,9 @@ app.use(cors({
 // Body parsers with increased limits for file uploads
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(morgan(isProduction ? 'combined' : 'dev'));
 
-// Static files (templates)
-app.use('/templates', express.static(path.join(process.cwd(), 'templates')));
-
-// Serve frontend static files in production
-if (isProduction) {
-  const frontendDist = path.join(process.cwd(), '..', 'frontend', 'dist');
-  app.use(express.static(frontendDist));
-  
-  // Serve index.html for all non-API routes (SPA support)
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(frontendDist, 'index.html'));
-    }
-  });
+if (!isProduction) {
+  app.use(morgan('dev'));
 }
 
 // API Routes
@@ -127,13 +114,6 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`✅ Server running on http://localhost:${PORT}`);
-      console.log(`\n📚 API Documentation: http://localhost:${PORT}/api`);
-      console.log(`❤️  Health Check: http://localhost:${PORT}/api/health\n`);
-      console.log(`Available endpoints:`);
-      console.log(`  Settings: /api/settings/jira, /api/settings/llm`);
-      console.log(`  JIRA:     /api/jira/fetch, /api/jira/recent`);
-      console.log(`  Templates:/api/templates`);
-      console.log(`  Test Plan:/api/testplan/generate\n`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
